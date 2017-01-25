@@ -1,6 +1,6 @@
 var React = require('react-native');
 var { AppRegistry } = React;
-var CardView = require('./cardview.js')
+import SampleView from './sample.js'
 
 console.disableYellowBox = true;
-AppRegistry.registerComponent('CardView', () => CardView.default);
+AppRegistry.registerComponent('Diagnostic', () => SampleView);

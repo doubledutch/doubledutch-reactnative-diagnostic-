@@ -1,28 +1,5 @@
 import React, { Component } from 'react';
-import ReactNative from 'react-native';
-import Update from 'react-addons-update'
-import SampleAPI from './sample.api'
-import EmptyCardView from './sample.empty'
-
-React.addons = { update: Update }
-
-import Feed, { FeedCardWrapper, GET_CARD_WIDTH, CARD_MARGIN } from 'dd-feed'
-import DDView from 'dd-ddview'
-
-// const DD = ReactNative.Platform.select({
-//   ios: () => ReactNative.NativeModules.DDBindings,
-//   android: () => {
-//     var bindings = ReactNative.NativeModules.DDBindings
-//     var parsedBindings = {}
-//     Object.keys(bindings).forEach((binding) => {
-//       parsedBindings[binding] = bindings[binding]
-//     })
-//     ['currentEvent','currentUser','configuration'].forEach((key) => {
-//       parsedBindings[key] = JSON.parse(parsedBindings[key])
-//     })
-//     return parsedBindings
-//   },
-// })();
+import ReactNative, { Alert, TouchableOpacity, Text, View, ScrollView, Image, NativeEventEmitter } from 'react-native';
 
 const DD = ReactNative.NativeModules.DDBindings
 const eventID = ReactNative.Platform.select({
@@ -30,57 +7,112 @@ const eventID = ReactNative.Platform.select({
   android: () => JSON.parse(DD.currentEvent).EventId
 })();
 
-const View = ReactNative.Platform.select({
-  ios: () => DDView,
+const ScreenView = ReactNative.Platform.select({
+  ios: () => ReactNative.View,
   android: () => ReactNative.View,
 })();
 
-class CardView extends Component {
+class HomeView extends Component {
   constructor() {
     super()
-    this.api = new SampleAPI()
+    this.state = { events: [] }
   }
 
   componentDidMount() {
-    var self = this
+    DD.setTitle(`DoubleDutch Diagnostic`)
 
-    this.api.connect().then(() => {
-      debugger
-    }).catch((err) => {
-      debugger
+    const eventer = new NativeEventEmitter(ReactNative.NativeModules.DDBindings)
+    eventer.addListener('viewDidAppear', (data) => {
+      this.setState({ events: this.state.events.concat('viewDidAppear') })
     })
-
-    // Log 
-    this.onLogMetric("base", "base", { action: 'loaded' })
-    DD.setTitle('Now')
+    eventer.addListener('viewDidDisappear', (data) => {
+      this.setState({ events: this.state.events.concat('viewDidDisappear') })
+    })
   }
 
-  onLogMetric(templateID, id, data) {
-    SampleAPI.logCardMetric(eventID, templateID, id, data).then((response) => {
-    })
+  navigate() {
+    DD.openURL('dd://activityfeed')
   }
 
   render() {
-    var { height, width } = ReactNative.Dimensions.get('window')
-
     return (
-      <View title="" style={{ flex: 1 }}>
-      </View>
+      <ScreenView title="" style={{ flex: 1 }}>
+        <ScrollView style={ styles.container }>
+          <Image style={ styles.headerImage } resizeMode="contain" source={{ uri: 'https://doubledutch.me/wp-content/uploads/2016/04/doubledutch-logo-300.png' }} />
+          <Text style={ styles.welcome }>DoubleDutch Diagnostic</Text>
+          <Text style={ styles.h1 }>Event</Text>
+          <Text style={ styles.text }>{JSON.stringify(DD.currentEvent)}</Text>
+          <Text style={ styles.h1 }>User</Text>
+          <Text style={ styles.text }>{JSON.stringify(DD.currentUser)}</Text>
+          <Text style={ styles.h1 }>Available Settings/Methods</Text>
+          <Text style={ styles.text }>{JSON.stringify(Object.keys(DD))}</Text>
+          <Text style={ styles.h1 }>Received Events</Text>
+          <Text style={ styles.text }>{this.state.events.join(', ')}</Text>
+          <Text style={ styles.h1 }>Interactions</Text>
+          <View style={{ opacity: 1 }}>
+            <TouchableOpacity style={ styles.button } onPress={() => this.navigate() }>
+              <Text style={ styles.buttonText }>Navigate to Feed</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={ styles.button } onPress={() => DD.requestAccessToken((err, token) => Alert.alert(token)) }>
+              <Text style={ styles.buttonText }>Request Access Token</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={ styles.button } onPress={() => Alert.alert('Hi!') }>
+              <Text style={ styles.buttonText }>Show Alert</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </ScreenView>
     )
   }
 }
 
-const pstyles = ReactNative.StyleSheet.create({
+const styles = ReactNative.StyleSheet.create({
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600'
+  },
+  button: {
+    backgroundColor: DD.primaryColor,
+    paddingHorizontal: 50,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  headerImage: {
+    marginHorizontal: 20,
+    marginVertical: 10,
+    flex: 1,
+    height: 30,
+  },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#dedede',
+    padding: 10,
+    paddingTop: 70,
   },
   welcome: {
-    fontSize: 20,
+    fontSize: 24,
     textAlign: 'center',
+    fontWeight: 'bold',
     margin: 10,
+  },
+  h1: {
+    fontSize: 18,
+    textAlign: 'left',
+    fontWeight: 'bold',
+    marginVertical: 4,
+  },
+  h2: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'left',
+    marginVertical: 2,
+  },
+  h3: {
+    fontSize: 14,
+    textAlign: 'left',
+    marginVertical: 2,
   },
   instructions: {
     textAlign: 'center',
@@ -89,4 +121,4 @@ const pstyles = ReactNative.StyleSheet.create({
   },
 });
 
-export default CardView
+export default HomeView
