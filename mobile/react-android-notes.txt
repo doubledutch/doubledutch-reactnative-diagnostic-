@@ -1,0 +1,17 @@
+RemoteContentHandler - feed parsing/caching
+DDProvider - query for React cards
+ActivityFeedGroup - test data
+UtilCursor - Column selections
+ReactActivityCard - list view cell for React
+react_card_activity_info_view - layout for cell
+reac_card_view - layout for card inside of cell
+DDGlobalReactInstanceManager - inject React SDK into singleton
+ReactUtils - handling for module name
+ActivityCursorAdapter - constructor of feed items
+CloudConfigSettings - self explanatory
+ActivityTable - sql list shit
+ActivityFeedItem - convert cursor to feed item
+ReactModule - injection of global instance manager
+ConfigAndAssetsDownloader - download bundle on config change refresh
+DDReactDownloadService - patching/download/bundles
+ReactDownloadActivity - spawns download service if file doesn't exist
